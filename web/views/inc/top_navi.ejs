@@ -1,0 +1,30 @@
+<div id="topnavi_wrapper">
+  <div class="navbar">
+    <img src="/img/logo.png" id="logo">
+    <a href="/coin/main">거래소 메인</a>
+    <a href="/coin/main/investment">투자내역</a>
+    <a href="/coin/main/mypage">마이페이지</a>
+    <a href="/notice/list">게시판</a>
+    <div class="dropdown">
+      <button class="dropbtn">미니게임
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-content">
+        <a href="/coin/game/rhythm">리듬게임</a>
+        <a href="/coin/game/tetris">테트리스</a>
+      </div>
+    </div> 
+  
+    <%if(joinUser==undefined || joinUser=="undefined"){ %>
+      
+      <a href="/coin/main/signupform" style="float:right">Sign Up</a>
+      <a href="/coin/main/loginform" style="float:right">Login</a>
+       
+  <%} else { %>
+    
+      <a href="/coin/logout" style="float:right">Logout</a>
+      <a href="#" style="float:right"><%=joinUser.user_name%></a>
+  <%}%>
+  
+  </div>
+</div>

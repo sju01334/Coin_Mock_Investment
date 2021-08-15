@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+<style>
+#wrapper {
+    margin: auto;
+    width: 1000px;
+    height: 800px;
+    position: relative;
+    background-color: black;
+    opacity: 0.8;
+    overflow: hidden;
+    
+}
+
+</style>
+<script src="./js/lib.js"></script>
+
+<script>
+
+
+var songArr=["song1.mp3", "song2.mp3"];  //노래 배열
+
+var audio; //오디오 전역변수
+var wrapper; //wrapper div
+var score; //점수div 전역변수
+
+var bar = []; //바 배열  - 좌,우, 위, 아래
+
+var back = []; // 도트 내려오는 배경 배열 - 1,2,3,4번째
+var backarr = [];  //몇번째 배경에 도트를 저장했는지를 저장하기위한 배열
+
+var dotarr = [];  //도트 배열 
+
+var velY ; //도트가 떨어지는 속도
+
+var num = 0;  //점수
+
+var dotnum =200 //생성할 도트 개수
+
+var successflag = "상태"; //바에 도트가 닿을때 출력할 문구
+
+var gameflag = false; //게임 시작, 멈추기 플레그
+
+var combo; //콤보
+var combocnt = 0 ;
+
+var dots ; //남은 도트 개수
+
+var div ; // 게임 첫 화면에 뜨는 버튼만드는 전역변수
+
+
+function init() {
+    wrapper = document.getElementById("wrapper");
+  
+    play_audio(); //노래재생
+    createscore(); //점수칸 생성
+    createbar(); //바 생성
+    createback(); //도트 내려오는 배경 생성
+    createdot(); // 도트 생성
+    createstartbt(); //스타트 버튼 div 생성
+    
+
+    document.body.addEventListener("keydown", function () {  //키보드를 누를때 이벤트처리
+        
+        var key = event.keyCode; 
+
+        var hit = new Audio('hit.mp3');
+        hit.play();   
+
+
+        if (key == 37) { //좌
+            back[0].style.backgroundColor = "red";
+            check(37);    //해당하는 키보드를 누를시 키 값을 가지고 체크함수로 이동
+        }
+        else if (key == 38) { //위
+            back[1].style.backgroundColor = "orange";
+            check(38);        
+        }
+        else if (key == 40) {//아래
+            back[2].style.backgroundColor = "yellow";
+            check(40);          
+        }
+        else if (key == 39) { //우
+            back[3].style.backgroundColor = "green";
+            check(39);            
+        }
+        
+        
+    });
+    
+    document.body.addEventListener("keyup", function () {  //키보드에서 손을 뗄때 이벤트 처리
+        var key = event.keyCode;
+        if (key == 37) { //좌
+            back[0].style.backgroundColor = "black";
+        }
+        else if (key == 38) { //위
+            back[1].style.backgroundColor = "black";
+        }
+        else if (key == 40) {//아래
+            back[2].style.backgroundColor = "black";
+        }
+        else if (key == 39) { //우
+            back[3].style.backgroundColor = "black";
+        }
+        
+    });
+    
+}
+
+function createstartbt(){  //게임시작 타이머 스타트 버튼 div 생성
+    div = document.getElementById("startclick");
+    div.style.width = 400+"px";
+    div.style.height = 300+"px";
+    div.style.left = 400+"px";
+    div.style.top = 200+"px";
+    div.style.fontSize = 80+"px";
+    div.style.textAlign = "center";
+    div.style.position = "absolute";
+    div.style.backgroundColor="white";
+    div.style.float = "left";
+
+   wrapper.appendChild(div);
+}
+
+var time=3; //3초->1초
+function startclick(){
+    
+    var timestart = setInterval(function(){
+      div.innerText=time;  
+      time -= 1;
+      if(time<0){
+
+          audio.play();
+          gameflag = true;
+          div.style.display = "none"; //완료되면 없애고 루프도 중지
+          clearInterval(timestart);
+      }
+    }, 1000);
+
+}
+
+
+
+//노래 선택 함수
+function play_audio() {  
+
+    audio = new Audio();
+    audio.src = songArr[selectsongNum];  //이전 페이지에서 가져온 노래를 src로 사용한다
+}
+
+//점수, 콤보, 도트개수, 판정 생성함수
+function createscore() {  
+    
+    score = document.createElement("div");  //점수 출력 
+    score.style.width = 500 + "px";
+    score.style.height = 50 + "px";
+    score.style.left = 400 + "px";
+    score.style.top = 10 + "px";
+    score.innerText = "score : 0";
+    score.style.fontSize = 40 + "px";
+    score.style.color = "white";
+    score.style.fontFamily="fantasy"
+    score.style.position = "absolute";
+    
+    dots = document.createElement("div");  //남은 도트 개수 출력 
+    dots.style.width = 400 + "px";
+    dots.style.height = 200 + "px";
+    dots.style.left = 50 + "px";
+    dots.style.top =50 + "px";
+    dots.innerText = "남은 도트 개수";
+    dots.style.fontSize = 50 + "px";
+    dots.style.color = "black";
+    dots.style.position = "absolute";
+    
+    successicon = document.createElement("div");  //great , perfect ,miss 출력
+    successicon.style.width = 300 + "px";
+    successicon.style.height = 200 + "px";
+    successicon.style.left = 350 + "px";
+    successicon.style.top = 200 + "px";
+    successicon.innerText = successflag;
+    successicon.style.fontSize = 100 + "px";
+    successicon.style.color = "white";
+    successicon.style.fontFamily="fantasy";
+    successicon.style.position = "absolute";
+    successicon.style.textAlign="center"
+    successicon.style.display="none";
+
+    combo = document.createElement("div");  //콤보 출력 
+    combo.style.width = 300 + "px";
+    combo.style.height = 200 + "px";
+    combo.style.left = 360+ "px";
+    combo.style.top =400 + "px";
+    combo.innerText = combocnt +" combo !";
+    combo.style.fontSize = 60 + "px";
+    combo.style.color = "orange";
+    combo.style.position = "absolute";
+    combo.style.display="none";
+    combo.style.fontFamily="fantasy"
+
+    wrapper.appendChild(score);  //바디에 appendchid
+    wrapper.appendChild(successicon);//바디에 appendchid
+    document.body.appendChild(dots);  //바디에 appendchid
+    wrapper.appendChild(combo);  //바디에 appendchid
+}
+//바 생성 함수
+function createbar() { 
+
+    for (var i = 0; i < 4; i++) {
+        bar[i] = document.createElement("div");
+        if (i == 0) {       //몇번째인지 판단해서 좌, 우, 위 , 아래를 표시해줌
+            bar[i].innerText = "◀";
+        }
+        else if (i == 1) {
+            bar[i].innerText = "▲";
+        }
+        else if (i == 2) {
+            bar[i].innerText = "▼";
+        }
+        else if (i == 3) {
+            bar[i].innerText = "▶";
+        }
+
+        bar[i].style.fontSize = 40 + "px";
+        bar[i].style.textAlign = "center";
+        bar[i].style.width = 250 + "px";
+        bar[i].style.height = 70 + "px";
+        bar[i].style.top = 730 + "px";
+        bar[i].style.left = (250 * i) + "px";
+        // bar[i].style.backgroundColor = "white";
+        bar[i].style.float = "left";
+        bar[i].style.position = "absolute";
+        bar[i].style.opacity =0.5;
+        bar[i].style.borderTop = "3px solid white"
+        bar[i].style.borderBottom = "3px solid white"
+        bar[i].style.color="white"
+
+        wrapper.appendChild(bar[i]); //생성한걸 wrapper에 appendchild
+    }
+
+}
+//배경 생성 함수
+function createback() {  
+
+    for (var i = 0; i < 4; i++) {  //총 4개의 (위,아래, 좌, 우) 배경 생성
+        back[i] = document.createElement("div");
+        back[i].style.width = 250 + "px";
+        back[i].style.height = 800 + "px";
+        back[i].style.top = 0 + "px";
+        back[i].style.left = (250 * i) + "px";
+        // back[i].style.backgroundColor = "black";
+        back[i].style.float = "left";
+        back[i].style.position = "absolute";
+        back[i].style.opacity = 0.3;
+        back[i].style.border = "1px solid white"
+
+        wrapper.appendChild(back[i]);  //생성한걸 wrapper에 appendchild
+
+    }
+
+}
+
+
+//도트생성 함수
+function createdot() {  
+    for (var i = 0; i < dotnum; i++) {   // dotnum만큼의 도트를 생성한다
+
+        var r = getRandom(4);
+        
+        var dot = document.createElement("div");
+        dot.style.width = 230 + "px";
+        dot.style.height = 40 + "px";
+        dot.style.top = (-200 * i )+ getRandom(120) + "px";
+        dot.style.left = 10 + "px"; //그냥 각 칸에서 찍히는거라 따로 i*할 필요없음....
+        dot.style.backgroundColor = "white";
+        dot.style.float = "left";
+        dot.style.position = "absolute";
+        dot.style.opacity=1;
+        dot.style.border = "1px solid white"
+
+        
+        dotarr.push(dot);  // 생성된 dot 배열에 저장
+        back[r].appendChild(dotarr[i]);  //배경 0,1,2,3중 랜덤하게 도트 넣기
+        backarr.push(r);  //배경 랜덤위치 어디에 들어갔는지 backarr에 저장
+
+
+    }
+}
+
+
+//키보드 눌렀을때 도트의 위치와 bar의 위치를 비교하는 함수
+function check(key) {  
+    
+    for (var i = 0; i < dotarr.length; i++) {   //생성한 도트의 개수만큼 반복 
+        var dottop = parseInt(dotarr[i].style.top); //해당 도트의 top값 가져오기
+        var k = backarr[i]; //해당 도트가 속한 배경의 위치값 0,1,2,3 확인하기 
+
+         if (k == 0 && key == 37) {  
+            checkScore( i, k , dottop);
+        }
+        else if (k == 1 && key == 38) { //좌, 우 ,위 ,아래 의 조건에서 한번더 체크 결과 확인
+            checkScore( i, k , dottop);
+        }
+        else if (k == 2 && key == 40) {
+            checkScore( i, k , dottop);
+        }
+        else if (k == 3 && key == 39) { 
+            checkScore( i, k , dottop);
+        }
+    }
+
+   /* if(combocnt<10){
+       
+    }*/
+   
+    score.innerText = "score : "+num;   //확인이 끝나면 변경된 num값을 score div에 넣기
+    successicon.innerText = successflag;   //확인이 끝나면 변경된 successflag 값을 successicon div에 넣기
+}
+
+//체크 결과 확인 함수
+function checkScore(i, k , dottop){   
+    //700~730 또는 760~800은  5점 , great 처리
+    if(dottop>=700 && dottop <= 730 ||  dottop>=760 && dottop <= 800){  
+        // (score, jd, color, k, i)
+        Judge(5, "Perfect!!", "white", k, i);
+       
+    }
+    //730~ 760 은  10점 , perfect 처리
+    if(dottop>=730 && dottop <= 760){  
+        Judge(10, "Great!", "green", k, i);
+    }
+    
+   
+}
+
+function Judge(score, jd, color, k, i){
+        num += score;
+        successflag = jd;
+        successicon.style.color = color;
+        successicon.style.display="block";
+
+        back[k].removeChild(dotarr[i]);  // 처리가 끝나면 부모 back[k] (k는 0,1,2,3 중 하나) div에서 해당하는 dot 제거
+        dotarr.splice(i, 1);  //도트 배열에서 해당하는 값 삭제
+        backarr.splice(i, 1); //backarr 배열에서 해당하는 값 삭제 (0,1,2,3중 하나)
+        
+        combocnt++; 
+        combo.innerText = combocnt +" combo !";
+        combo.style.display="block";
+        dots.innerText = "남은 수 : "+ parseInt(dotarr.length) + "개";
+
+        //콤보, 판정 창 화면에서 없애기
+        setTimeout(function(){
+            successicon.style.display="none";
+            combo.style.display="none";
+        }, 300);
+}
+
+
+//떨어지는 이미지 연출
+function dropdown() { 
+
+    if (gameflag) { //플레그가 true면 실행
+        
+        for (var i = 0; i < dotarr.length; i++) {  
+
+            dotarr[i].style.top = parseInt(dotarr[i].style.top) + velY + "px";  //기존 자기위치에서 한발자국 증가
+
+            if (parseInt(dotarr[i].style.top) >= 800) {  //800을 넘어서면~ 
+                
+                combocnt = 0; //콤보 처음부터 다시 
+                combo.innerText = combocnt +" combo !";
+
+                num -= 10; 
+                score.innerText ="score : "+num ;
+                
+                successflag = "miss";
+                successicon.style.color = "red";
+                successicon.style.display="block";
+                setTimeout(function(){
+                    successicon.style.display="none";
+                }, 300)
+                successicon.innerText = successflag;
+                
+                dots.innerText = "남은 수 : "+ parseInt(dotarr.length-1) + "개"; 
+                
+
+                backarr.splice(i, 1); //해당 도트가 저장된 배경 배열 제거
+                dotarr.splice(i, 1);  //해당 도트를 배열에서 제거
+                
+            }
+        }
+
+        if (dotarr.length <= 0) { //다 누르면 성공
+            gameflag = false;
+            var ans =  confirm("게임 성공");
+            if (ans) {//환인버튼시
+                location.reload(); //페이지 새로고침
+            }
+        }
+        if ( num< -50){  //0점 아래로 떨어지면 게임 실패!
+            gameflag = false;
+            var ans =  confirm("게임 실패");
+            if (ans) {//환인버튼시
+                location.reload(); //페이지 새로고침
+            }
+        }
+
+    
+    }
+
+}
+
+
+var selectsongNum;  //이전페이지 값 가져오는 변수들
+var version;
+
+window.addEventListener("load", function () {
+    selectsongNum = localStorage.getItem("selectsongNum");  //이전페이지에서 가져온 노래
+    version = localStorage.getItem("version"); //버젼
+
+    if(version=="hard"){
+        velY = 2;
+    }
+    if(version=="easy"){
+        velY =1;
+    }
+    
+    init();
+    setInterval("dropdown()", 1); //자동화
+});
+
+
+
+</script>
+</head>
+
+<body>
+   
+
+ <input type="button" onClick="audio.play(); gameflag=true;" value="PLAY" />
+    <input type="button" onClick="audio.pause(); gameflag=false;" value="PAUSE" />
+
+  
+    <div id="wrapper">
+        <div id="startclick" onclick="startclick()" >누르면 시작!!</div>    
+    </div>
+
+
+
+</body>
+
+</html>

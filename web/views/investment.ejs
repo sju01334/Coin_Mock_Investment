@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/navbar-top.css">
+  <link rel="stylesheet" href="/css/investment.css">
+
+  <!-- Resources -->
+  <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+  <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+  <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script>
+    var data;
+    var join_user;
+    var member_id;
+    var total_money = 0;
+    var chartData=[];
+
+    $(function () {
+      $.ajax({
+        url: "/coin/main/investmentdata",
+        type: "get",
+        success: function (result, status, xhr) {
+            var json = JSON.parse(result);
+            // console.log("result is ", json);
+            member_id = json.joinUser.member_id;
+            data = json.invest;
+            tableCreate(data);
+        },
+        error:function(xhr,status,error){
+
+        }
+      });
+    });
+
+
+    function tableCreate(data) {
+      var  tc = new Array();
+      var html = "";
+      var cnt = 0;
+
+      var stock_name, now_price;
+
+      for (var i = 0; i < data.length; i++) {
+        stock_name = data[0].stock_name;
+        now_price = data[0].close_price;
+
+        tc.push({
+          name: stock_name, price: now_price,
+          count: data[0].total_count, average: data[0].price_average
+        });
+        total_money += (parseInt(data[0].total_count) * parseInt(data[0].price_average));
+      }
+      
+      $("#money").html(total_money+"원");
+
+      for (key in tc) {
+        html += '<tr>';
+        html += '<td>' + tc[key].name + '</td>';
+        html += '<td>' + tc[key].price + '</td>';
+        html += '<td>' + tc[key].count + '</td>';
+        html += '<td>' + tc[key].average+ '</td>';
+        html += '</tr>';
+      }
+      
+
+      $("#dynamicTbody").empty();
+      $("#dynamicTbody").append(html);
+
+      chartData.push({
+        "coin": stock_name, "asset": total_money
+      });
+      // chartData.push({
+      //   "coin": "Mcoin", "asset": 2500
+      // });      
+      console.log(chartData);
+
+      // Themes begin
+      am4core.useTheme(am4themes_animated);
+      // Themes end
+
+      // Create chart instance
+      var chart = am4core.create("chartdiv", am4charts.PieChart);
+      //도넛 차트로 변경
+      chart.innerRadius = am4core.percent(30);
+
+      // Add data
+      chart.data = chartData;
+      // chart.data = [{
+      //   "coin": '1',
+      //   "asset": 1
+      // }, {
+      //   "coin": 'join_result[1][1].stock_name',
+      //   "asset": 2
+      // }];
+
+      // Add and configure Series
+      var pieSeries = chart.series.push(new am4charts.PieSeries());
+      pieSeries.dataFields.value = "asset";
+      pieSeries.dataFields.category = "coin";
+      pieSeries.slices.template.stroke = am4core.color("#fff");
+      pieSeries.slices.template.strokeWidth = 2;
+      pieSeries.slices.template.strokeOpacity = 1;
+      //주변 값 제거
+      pieSeries.labels.template.disabled = true;
+      //범례 추가
+      chart.legend = new am4charts.Legend();
+
+      // This creates initial animation
+      pieSeries.hiddenState.properties.opacity = 1;
+      pieSeries.hiddenState.properties.endAngle = -90;
+      pieSeries.hiddenState.properties.startAngle = -90;
+    }
+
+
+    // am4core.ready(function () {/*PIE CHART*/
+      /*외부 데이터 로드*/
+      // https://www.amcharts.com/docs/v4/concepts/data/loading-external-data/
+      //chart.dataSource.url = "pie_chart_data.json";
+
+
+    //   // Themes begin
+    //   am4core.useTheme(am4themes_animated);
+    //   // Themes end
+
+    //   // Create chart instance
+    //   var chart = am4core.create("chartdiv", am4charts.PieChart);
+    //   //도넛 차트로 변경
+    //   chart.innerRadius = am4core.percent(30);
+
+    //   // Add data
+    //   // chart.data = chartData;
+    //   chart.data = [{
+    //     "coin": '1',
+    //     "asset": 1
+    //   }, {
+    //     "coin": 'join_result[1][1].stock_name',
+    //     "asset": 2
+    //   }];
+
+    //   // Add and configure Series
+    //   var pieSeries = chart.series.push(new am4charts.PieSeries());
+    //   pieSeries.dataFields.value = "asset";
+    //   pieSeries.dataFields.category = "coin";
+    //   pieSeries.slices.template.stroke = am4core.color("#fff");
+    //   pieSeries.slices.template.strokeWidth = 2;
+    //   pieSeries.slices.template.strokeOpacity = 1;
+    //   //주변 값 제거
+    //   pieSeries.labels.template.disabled = true;
+    //   //범례 추가
+    //   chart.legend = new am4charts.Legend();
+
+    //   // This creates initial animation
+    //   pieSeries.hiddenState.properties.opacity = 1;
+    //   pieSeries.hiddenState.properties.endAngle = -90;
+    //   pieSeries.hiddenState.properties.startAngle = -90;
+
+
+
+
+    // }); // end am4core.ready()
+
+    /*보유 코인 현황*/
+    //i값 변경
+    // window.addEventListener("load", function () {
+    //   tableCreate();
+    // });
+
+  </script>
+</head>
+
+<body>
+  <!-- 탑 네비게이션 -->
+  <%- include('inc/top_navi')%>
+
+    <div id="wrapper">
+      <div id="container_list">
+        <div id="container_table1">
+          <h2>TOTAL</h2>
+          <table id="table_total">
+            <tr>
+              <th>총 보유자산</th>
+              <td>
+                <div id="money"></span>
+              </td>
+            </tr>
+
+
+          </table>
+        </div>
+        <div id="container_table2">
+          <h2>EACH</h2>
+          <div style="overflow: scroll; height: 450px;">
+            <table id="table_each">
+              <table id="dynamicTable">
+                <thead>
+                  <tr>
+                    <th>COIN NAME</th>
+                    <th>NOW PRICE</th>
+                    <th>COIN COUNT</th>
+                    <th>COIN AVERAGE</th>
+                  </tr>
+                </thead>
+                <tbody id="dynamicTbody">
+                </tbody>
+              </table>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="container_doughnut">
+        <h2>보유 코인</h2>
+        <div id="chartdiv"></div>
+
+      </div>
+    </div>
+
+
+    <!--  footer  -->
+<div>
+  <%- include('inc/footer')%>
+</div>
+</body>
+</html>

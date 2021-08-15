@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stock market</title>
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="/css/navbar-top.css">
+     
+<style>
+  #logo{
+    height: 50px;
+  }
+  
+  .bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+      font-size: 3.5rem;
+    }
+  }
+ 
+</style>
+<link rel="stylesheet" href="/css/candle.css">
+<script src="https://www.amcharts.com/lib/4/core.js"></script>
+<script src="https://www.amcharts.com/lib/4/charts.js"></script>
+<script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
+<script>
+  //전역변수 초기화
+  var data = [];
+  var chartData;
+  var chart;
+  var intervalCnt = 0;
+  var cnt;
+  var lastdataItem, price, openP, closeP, lowP, highP;
+  
+  function rhythmgame(){
+    location.href="../rhythm_game/intro.html";
+
+  }
+</script>
+<script>
+
+$(function(){
+  getChartData();
+  getChartLog();
+});
+  
+//차트 로그 데이터 가져오기
+function getChartLog(){
+   $.ajax({
+     url:"/coin/main/log",
+     type:"GET",
+     success:function(result,status,xhr){
+      var chartLog = JSON.parse(result);
+      // console.log(chartLog);
+      printChartLog(chartLog);
+     },
+     error:function(xhr,status,error){
+
+     }
+   });
+
+   setTimeout("getChartLog()", 60000);
+}
+
+
+//차트 로그 데이터 찍기
+function printChartLog(data){
+  var html = "";
+
+  for(var key in data){
+  html += '<tr>';
+  html += '<td class="log_td" style="width:30%">'+data[key].stock_date+'</td>';
+  html += '<td class="log_td">'+data[key].open_price+' (KRW)</td>';
+  html += '<td class="log_td">'+data[key].low_price+' (KRW)</td>';
+  html += '<td class="log_td">'+data[key].high_price+' (KRW)</td>';
+  html += '<td class="log_td">'+data[key].close_price+' (KRW)</td>';
+  html += '</tr>';
+
+  $("#logTbody").empty();
+  $("#logTbody").append(html); 
+
+
+  }
+}
+
+function getChartData(){
+  $.ajax({
+    url:"/coin/main/chart",
+    type:"GET",
+    success:function(result,status,xhr){
+      chartData = JSON.parse(result);
+      // console.log("chartData는 ",chartData);
+
+      //stock_name 출력
+      $("#stock_name").html("<b>"+chartData[0].stock_name +" </b>"+"<span>(KRW)</span>");
+
+
+      printChart(chartData);
+    },
+    error:function(xhr,status,error){
+
+    }
+  });
+}
+
+function printChart(chartData){
+  //가져온 chartData data 배열에 입력!!
+  for(var i=0;i<chartData.length;i++){
+    var stock_date = chartData[i].stock_date;
+    var open_price = chartData[i].open_price;
+    var high_price = chartData[i].high_price;
+    var low_price = chartData[i].low_price;
+    var close_price = chartData[i].close_price;
+    
+    data.push({ date: stock_date, close: close_price
+            , open: open_price, low: low_price, high: high_price });
+  }
+
+  am4core.useTheme(am4themes_animated);
+
+  chart = am4core.create("chartdiv", am4charts.XYChart);
+  chart.paddingRight = 20;
+
+  chart.data = data; //chartData 모듈 데이터에 삽입!
+  
+  //X축에 출력되는 Date 표기방식 설정
+  chart.dateFormatter.inputDateFormat = "h:mm a"; 
+  
+  //X축 설정!!
+  var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+  dateAxis.renderer.grid.template.location = 0;
+  dateAxis.renderer.minGridDistance = 60;
+  dateAxis.dateFormats.setKey("minute", "h:mm a"); //X축 date 표현 설정
+  //초,분,시 가 바뀔 때 dateFormat.setkey 조건이 안먹어서 구간이 바뀔때 새로 지정
+  dateAxis.periodChangeDateFormats.setKey("second", "[bold]h:mm a");
+  dateAxis.periodChangeDateFormats.setKey("minute", "[bold]h:mm a");
+  dateAxis.periodChangeDateFormats.setKey("hour", "[bold]h:mm a"); 
+
+  //Y축 설정!!
+  var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+  valueAxis.tooltip.disabled = true;
+
+  //차트에 나타낼 데이터 표기 설정!!
+  var series = chart.series.push(new am4charts.CandlestickSeries());
+  series.dataFields.dateX = "date";
+  series.dataFields.valueY = "close";
+  series.dataFields.openValueY = "open";
+  series.dataFields.lowValueY = "low";
+  series.dataFields.highValueY = "high";
+  //차트 그래프에 커서를 올려놓았을 때 툴팁 표시 설정!!
+  series.tooltipText = "Open: [bold]${openValueY.value}[/]\nLow: [bold]${lowValueY.value}[/]\nHigh: [bold]${highValueY.value}[/]\nClose: [bold]${valueY.value}[/]";
+
+  //차트 내의 십자선 커서 표현
+  chart.cursor = new am4charts.XYCursor();
+
+  // chart.scrollbarX = new am4core.Scrollbar();
+
+  tick();
+
+}
+
+function tick(){
+  $.ajax({
+    url:"/coin/main/chart",
+    type:"GET",
+    success:function(result,status,xhr){
+      createNewData();
+    },
+    error:function(xhr,status,error){
+    }
+  });
+  setTimeout("tick()", 1000);
+}
+
+function createNewData(){
+  // console.log("data는", chart.data);
+
+  // Add Data
+  if(intervalCnt%60==0){         
+    //1분마다 MySQL에 데이터 찍기
+    cnt = chart.data.length;
+    lastdataItem= chart.data[cnt-1];
+
+    price = lastdataItem.close;
+    openP = price;
+    closeP = price;
+    lowP = price;
+    highP = price;
+    
+    if(intervalCnt!=0){
+      registData(lastdataItem);
+    }
+
+    var d = new Date(new Date(lastdataItem.date).getTime() + 60000);
+
+    //MySQL에 넣기 위해서 날짜 객체를 문자열로 변환 시키기!!
+    var date = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2)
+    + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+
+    // console.log(date);
+
+    chart.addData(
+      { date: date, close: price 
+          , open: price, low: price, high: price});
+
+    // console.log(date);
+
+    cnt++;
+  }
+
+  if(price < 5){
+    price += Math.round(Math.random() * 5);
+  }else{
+    price +=  Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 5);
+  }
+  
+  //현재 가격 출력
+  $("#stock_price").html("<b>"+price+"</b>"+ "<span>KRW</span>");
+  $(".price").html(price);
+  // $('input[name=nowprice]').val(price);
+  $('input[name=nowprice]').attr('value',price);
+  
+  if(price > highP){
+      highP = price;
+  }
+  if(price < lowP){
+      lowP = price;
+  }
+  
+  
+  chart.data[cnt-1].close = price;
+  chart.data[cnt-1].high = highP;
+  chart.data[cnt-1].low = lowP;
+  chart.data = chart.data;
+  // chart.dataSource.reloadFrequency = 500;
+      
+  intervalCnt++;
+}
+
+function registData(newData){
+  // console.log(chartData[0].stock_id);
+  var str = "stock_id="+chartData[0].stock_id;
+  str += "&date="+newData.date;
+  str += "&open="+newData.open;
+  str += "&close="+newData.close;
+  str += "&low="+newData.low;
+  str += "&high="+newData.high;
+
+  console.log(str);
+  $.ajax({
+    url:"/coin/main/regist?"+str,
+    type:"GET",
+    success:function(reuslt,status,xhr){
+
+    },
+    error:function(xhr,status,error){
+
+    }
+  });
+}
+  
+  
+</script>
+
+</head>
+
+<body>
+  <!-- 탑 네비게이션 -->
+  <%- include('inc/top_navi')%>
+  
+  <div id=trading_main>
+    <div id="left_side">
+      <div class="chartHeader">
+        <div id="stock_name"></div>
+        <div id="stock_price"></div>
+      </div>
+      <div id="chartdiv"></div>
+    </div>
+    <div id="right_side">
+      <!-- 사이드 네비게이션 -->
+      <%- include('inc/side_navi')%>
+    </div>
+  </div>
+
+  <div id="trading_system">
+    <div id="chartLog">
+      <div style="height:30px; border-bottom: 3px solid #093687;">
+        <table style="border: 1px;" id="logTable">
+          <tr>
+          <th style="width: 30%;">일시</th>
+          <th>시가</th>
+          <th>저가</th>
+          <th>고가</th>
+          <th>종가</th>
+          </tr>
+        </table>
+      </div>
+
+      <div style="overflow: scroll; width: 100%; height:350px ;">
+        <table style="width: 100%;">
+          <tbody id="logTbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!--매수매도 네비게이션 -->
+    <%- include('inc/trade_navi')%>
+  </div>
+
+
+  <div id="foot">
+    <!-- footer -->
+    <%- include('inc/footer.ejs')%>
+  </div>
+
+</body>
+
+
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">    
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<link rel="stylesheet" href="/css/navbar-top.css">
+<style>
+body {font-family: Arial, Helvetica, sans-serif; margin: 0px;}
+input[type=text], textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  resize: vertical;
+}
+textarea{
+  height:100px;
+}
+input[type=button] {
+  background-color: #0063DD;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  border-radius: 15px;
+}
+input[type=button]:hover {
+  opacity: 0.8;
+}
+.container {
+  border-radius: 5px;
+  padding: 20px;
+  width: 80%;
+  margin: auto;
+  height: 1200px;
+}
+.comment-list div{
+  display:inline-block; /*block속성(크기 가능)을 유지하되, 공존할수있슴*/
+}
+#title_div{
+  width: 100%;
+  height: 50px;
+  border-top:3px solid #093687 ;
+  border-bottom: 1px solid #093687;
+  font-size: 30px;
+}
+
+.sibal{
+  float: left;
+  text-align: center;
+  padding: 10px;
+  border-top:3px solid #093687 ;
+  border-bottom: 1px solid #093687;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
+<script src="/js/Comments.js"></script>
+<script>
+  
+getCommentsList();
+
+//onLoad
+$(function(){ 
+  //편집기 입히기
+  CKEDITOR.replace('content', {
+   toolbar: 'Custom', //makes all editors use this toolbar
+   toolbarStartupExpanded : false,
+   toolbarCanCollapse  : false,
+   toolbar_Custom: [] ,
+   resize_enabled : 'false',
+   height : '300'
+
+  });
+  CKEDITOR.addCss(".cke_editable{border-color: #FF0000;}");
+
+
+  $($("input[type='button']")[0]).click(function(){ //수정버튼
+    if("<%=joinUser%>"=="undefined"){
+      alert("로그인이 필요합니다");
+    }else{
+      editform();
+    }
+  });
+
+
+  $($("input[type='button']")[1]).click(function(){ //삭제버튼
+    if("<%=joinUser%>"=="undefined"){
+      alert("로그인이 필요합니다");
+    }else{
+      del();
+    }
+  });
+
+  $($("input[type='button']")[2]).click(function(){ //목록버튼
+    getList();
+  });
+
+
+});
+
+
+
+//수정 디테일 폼 가져오기
+function editform(){
+
+  if("<%=noticeList.writer%>"!="<%=joinUser.user_id%>"){
+    alert("작성자가 아닙니다");
+  }else{
+    location.href="/notice/editform?notice_id=<%=noticeList.notice_id%>";
+  }
+
+}
+
+//작성자만 삭제
+function del(){
+  if("<%=noticeList.writer%>"!="<%=joinUser.user_id%>"){
+    alert("작성자가 아닙니다");
+  }else{
+    if(confirm("삭제할겁니까?")){
+      $("form").attr({
+        action:"/notice/delete",
+        method:"post"
+      });
+      $("form").submit();
+    }
+  }
+}
+
+
+
+//게시판 목록 가져오기
+function getList(){
+  location.href="/notice/list";
+}
+
+
+//댓글 등록 요청
+function addComment(){
+  var xhttp = new XMLHttpRequest();//비동기 객체 생성 
+  //이벤트 처리 
+  xhttp.onreadystatechange=function(){
+    if(this.readyState==4 && this.status==200){
+      var json = JSON.parse(this.responseText); //쌍따옴표 걷어내고, json객체 반환
+      // console.log("리스폰스 텍스트는 ",this.responseText);
+      
+      if(json.result==0){
+        alert("댓글 등록실패");
+      }else{
+        alert("댓글 등록 성공");
+
+        getCommentsList(); //동기가 아닌 비동기로 호출하는 함수를 이용하자!!
+      }
+    }     
+  }
+
+  xhttp.open("POST", "/comments/regist", true);
+  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  var msg=$("input[name='msg']").val();//댓글 내용
+  var author=$("input[name='author']").val();//댓글 작성자
+  xhttp.send("notice_id=<%=noticeList.notice_id%>&msg="+msg+"&author="+author);
+}
+
+//댓글 목록을 비동기로 
+function getCommentsList(){
+
+  var xhttp=new XMLHttpRequest(); 
+  xhttp.onreadystatechange=function(){
+    if(this.readyState==4 && this.status==200){
+      var json = JSON.parse(this.responseText); //문자열을 to json으로...
+      console.log("리스트 출력을 위한 json은", json);
+      printCommentsList(json);
+    }
+  }
+
+  xhttp.open("GET", "/comments/list?notice_id=<%=noticeList.notice_id%>", true);
+  xhttp.send();
+}
+//댓글 출력!!!
+function printCommentsList(arr){
+
+  $("#comments_wrapper").html("");  //innerHTML="" 동일
+  console.log(arr);
+  for(var i=0;i<arr.length;i++){ //게시물 수만큼 반복문 수행
+    var msg=arr[i].msg;//메시지
+    var author=arr[i].author;//작성자
+    var writeDay=arr[i].writeday.substring(0,10);//등록일
+    var c = new Comments(document.getElementById("comments_wrapper"), msg, author, writeDay);
+  }
+}
+
+
+
+</script>
+</head>
+<body>
+  <!-- 탑 네비게이션 -->
+<%- include('../inc/top_navi')%>
+
+
+<!-- 게시글 본문 -->
+<div class="container">
+  <form id="detail-form">
+    <div name="title" id="title_div" ><%=noticeList.title%> </div> 
+    <div style="padding-top: 10px; padding-bottom: 10px;">
+      <div name="writer" style="float: left;"><%=noticeList.writer%></div>
+      <div style="padding-right: 20px; padding-left: 20px; float: left;">|</div>
+      <div name="regdate" style="float: left;"><%=noticeList.regdate.toLocaleString()%></div>
+    </div>
+    <br><br><br><br>
+    <textarea id="content" name="content" style="width: 100%; height: 300px; border: none;" readonly>
+      <%=noticeList.content%>
+    </textarea>
+    <br><br>
+
+    <input type="button" value="수정">
+    <input type="button" value="삭제">
+    <input type="button" value="목록">
+  </form>
+
+  <p></p>
+  <div>
+    <div class="sibal" style="width:70%">댓글내용</div>
+    <div class="sibal" style="width:15%;">작성자</div>
+    <div class="sibal" style="width:10%;">등록날짜</div>
+  </div>
+  <div id="comments_wrapper">
+    <%for(var i=0;i<commentsList.length;i++){%>
+    <%var comments=commentsList[i]; //댓글 한건 꺼내기%>    
+    <div class="comment-list">
+      <div style="width:70%;"><%=comments[2]%></div>    
+      <div style="width:15%"><%=comments[3]%></div>   
+      <%
+        var d = new Date(comments[4]);      
+        var yy=d.getFullYear();
+        var mm=lib.getZeroString(d.getMonth()+1); //월
+        var dd = lib.getZeroString(d.getDate());//일
+      %>   
+      <div style="width:10%"><%=yy%>-<%=mm%>-<%=dd%></div>    
+    </div>
+    <%}%>
+  </div>    
+
+  
+  <form id="comment-form">
+    <p></p>
+    <input type="hidden" name="notice_id" value="<%=noticeList.notice_id%>">
+
+    <input type="text" name="msg" placeholder="댓글내용" style="width:70%; height: 100px;">
+    <input type="text" name="author" placeholder="작성자" style="width:15%; margin-top: 0px;">
+    <input type="button" value="댓글등록" style="width:10%" onClick="addComment()">
+  </form>
+
+
+</div>
+
+<!-- footer -->
+<div>
+  <%- include('../inc/footer')%>
+</div>
+
+</body>
+</html>

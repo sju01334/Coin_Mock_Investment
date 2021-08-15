@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="/css/navbar-top.css">
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: lightgray;
+        margin: 0px;
+      }
+      form {
+        margin-top: 300px;
+        margin: auto;
+        width: 500px;
+
+      }
+      
+      input[type=text], input[type=password] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      
+      
+      button {
+        background-color: #0063DD;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+
+      }
+      
+      button:hover {
+        opacity: 0.8;
+      }
+
+      .loginbtn{
+        border-radius: 15px;
+      }
+
+      .cancelbtn {
+        width: auto;
+        height: auto;
+        padding: 10px 18px;
+        background-color: #f44336;
+        border-radius: 15px;
+      }
+      
+      .imgcontainer {
+        text-align: center;
+        margin: 24px 0 12px 0;
+      }
+      
+      img.avatar {
+        width: 40%;
+        border-radius: 50%;
+      }
+      
+      .container {
+        margin-top: 100px;
+        padding: 16px;
+        border:1px solid #ccc;
+        background-color: white;
+        border-radius: 20px 20px 0 0;
+      }
+      .container2 {
+        padding: 16px;
+        border:1px solid #ccc;
+        background-color: white;
+        border-radius: 0 0 20px 20px;
+      }
+      
+      span.psw {
+        float: right;
+        padding-top: 16px;
+      }
+      
+      /* Change styles for span and cancel button on extra small screens */
+      @media screen and (max-width: 300px) {
+        span.psw {
+           display: block;
+           float: none;
+        }
+        .cancelbtn {
+           width: 100%;
+        }
+      }
+      </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+  function loginCheck(){
+      $("form").attr({
+          action:"/coin/main/login",
+          method:"post"
+      });
+      $("form").submit(); //전송메서드
+  }
+</script>
+</head>
+<body>
+      <!-- 탑 네비게이션 -->
+      <%- include('inc/top_navi')%>
+<div style="height: 800px;">
+  <form>
+    <div class="container">
+      <img src="/img/logo.png" id="logo" style="float:right">
+      <h2>Login</h2>
+      <label for="user_id"><b>ID</b></label>
+      <input type="text" placeholder="Enter ID" name="user_id" required>
+  
+      <label for="user_pass"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name="user_pass" required>
+  
+      <button class="loginbtn" onclick="loginCheck()">Login</button>
+    </div>
+  
+    <div class="container2" style="background-color:#f1f1f1">
+      <button type="button" class="cancelbtn" onclick="location.href='/coin/main'">Cancel</button>
+      <span class="psw">Forgot <a href="#">password?</a></span>
+    </div>
+  </form>
+
+</div>
+  
+<!--  footer  -->
+<div>
+  <%- include('inc/footer')%>
+</div>
+
+</body>
+</html>

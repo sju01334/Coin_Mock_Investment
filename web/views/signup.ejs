@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="/css/navbar-top.css">
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: lightgray;
+        margin: 0px;
+      }
+      
+      form {
+        margin-top: 300px;
+        margin: auto;
+        width: 700px;
+        height: 100%;
+      }
+      
+      /* Full-width input fields */
+      input[type=text], input[type=password] {
+        width: 99%;
+        padding: 15px;
+        margin: 5px 0 22px 0;
+        display: inline-block;
+        border: none;
+        background: white;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      
+      input[type=text]:focus, input[type=password]:focus {
+        background-color: white;
+        outline: none;
+      }
+      
+      hr {
+        border: 1px solid #f1f1f1;
+        margin-bottom: 25px;
+      }
+      
+      /* Set a style for all buttons */
+      button {
+        background-color: #0063DD;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        opacity: 0.9;
+      }
+      .signupbtn{
+        border-radius: 15px;
+      }
+      
+      button:hover {
+        opacity:1;
+      }
+      
+      /* Extra styles for the cancel button */
+      .cancelbtn {
+        padding: 14px 20px;
+        background-color: #f44336;
+      }
+      
+      /* Add padding to container elements */
+      .container {
+        padding: 16px;
+        margin-top: 100px;
+        border-radius: 20px;
+        border:1px solid #ccc;
+        background-color: white;
+      }
+      
+      /* Clear floats */
+      .clearfix::after {
+        content: "";
+        clear: both;
+        display: table;
+      }
+      
+      /* Change styles for cancel button and signup button on extra small screens */
+      @media screen and (max-width: 300px) {
+        .signupbtn {
+           width: 100%;
+        }
+      }
+      </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+  function signup(){
+      $("form").attr({
+          action:"/coin/main/signup",
+          method:"post"
+      });
+      $("form").submit(); //전송메서드
+  }
+  if(user_name.value==""){//user.name
+      alert("이름을 입력하세요.");
+      user_name.focus();
+  }else  if(user_id.value==""){//user.id
+      alert("아이디를 입력하세요.");
+      user_id.focus();
+  }else if(user_pass.value==""){//user.pass
+      alert("비밀번호를 입력하세요");
+      user_pass.focus();
+  }else if(user_pass.value!=psw-repeat.value){//두 비밀번호가 다르다면
+      alert("비밀번호를 확인하세요");
+      psw-repeat.focus();
+  }
+  // }else{
+  //     var form=document.getElementById("form");
+  //     //입력 양식인 form태그는 전송 대상 서버에 어떤 방식으로 전송할지 등을 지정
+  //     form.submit();//네트워크를 통해 입력데이터 들이 전송
+  // }       
+</script>
+</head>
+<body>
+      <!-- 탑 네비게이션 -->
+      <%- include('inc/top_navi')%>
+<div style="height: 800px;">
+<form>
+  <div class="container">
+    <img src="/img/logo.png" id="logo" style="float:right">
+    <h1>Sign Up</h1>
+    <p>Please fill in this form to create an account.</p>
+    <hr> 
+   
+    <label for="user_name"><b>User Name</b></label>
+    <input type="text" placeholder="User Name" name="user_name" required>
+    
+    <label for="user_id"><b>ID</b></label>
+    <input type="text" placeholder="Enter ID" name="user_id" required>
+
+    <label for="user_pass"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="user_pass" required>
+
+    <label for="psw-repeat"><b>Repeat Password</b></label>
+    <input type="password" placeholder="Repeat Password" name="psw-repeat" required>
+
+    <div class="clearfix">
+      <button class="signupbtn" onClick="signup()">Sign Up</button>
+    </div>
+
+  </div>
+</form>
+
+</div>
+
+
+<!--  footer  -->
+<div>
+  <%- include('inc/footer')%>
+</div>
+
+</body>
+</html>

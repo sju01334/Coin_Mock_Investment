@@ -1,0 +1,200 @@
+<%
+/*  페이징 처리를 위한 변수 선언 및 연산
+    변수화 시켜놓으면 유지보수 하기가 용이하다
+    변수간의 순서는 매우 중요하다...
+*/
+var totalRecord=param.noticeList.length; //총 레코드 수 
+var pageSize=10; //페이지당 보여질 레코드 수
+var totalPage=Math.ceil(totalRecord/pageSize); //공식
+var blockSize=10; //블럭당 보여질 페이지 수
+var currentPage = param.currentPage;//현재 페이지
+
+var firstPage=currentPage - (currentPage-1)%blockSize; //블럭당 for문의 시작 페이지 
+var lastPage=firstPage + (blockSize-1); //블럭당 for문의 마지막 페이지
+var curPos=(currentPage-1)*pageSize; //페이지당 데이터 배열의 시작 인덱스
+var num=totalRecord -  curPos; //페이지당 시작 게시물 번호
+
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/navbar-top.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body{
+    margin: 0px;
+}
+.container{
+    border-radius: 5px;
+    padding: 20px;
+    width: 80%;
+    margin: auto;
+    height: 1000px;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+}
+th, td {
+  text-align: left;
+  padding: 16px;
+}
+td{
+    border-bottom: 1px solid lightgray;
+}
+th{
+    border-bottom: 1px solid #093687;
+}
+
+a{
+    text-decoration: none; /* 밑줄 제거 */
+}
+
+.pageNum{
+    font-size:20px;
+    font-weight:bold;
+    color:blue;
+}
+button {
+    background-color: #0063DD;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+}
+
+#registbtn{
+    width: 100px;
+    border-radius: 15px;
+    float: right;
+}
+
+button:hover {
+opacity: 0.8;
+}
+
+#t_div{
+    width: 100%;
+    height: 50px;
+    border-bottom: 3px solid #093687;
+    font-size: 30px;
+}
+
+#search_list{
+    padding: 5px;
+    margin: auto;
+    clear: both;
+    width: 500px;
+}
+
+#searchbtn{
+    padding-top: 5px;
+    padding-bottom: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+
+
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+var keyword;
+//검색버튼 클릭시
+function search(){
+    $("#search_form").attr({
+        action:"/notice/search",
+        method:"post"
+    });
+    $("#search_form").submit();
+}
+</script>
+</head>
+<body>
+<!-- 탑 네비게이션 -->
+<%- include('../inc/top_navi')%>
+
+<div class="container">
+    <table>
+        <div id="t_div">종목 토론방</div>
+        <tr>
+            <th>No</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>등록일</th>
+            <th>조회수</th>
+        </tr>
+        <%for(var i=1;i<=pageSize;i++){%>
+        <%if(num<1)break; //게시물 번호가1보다 작아지면 멈추기%>        
+        <%var notice=param.noticeList[curPos++];//배열에서 게시물 한건 꺼내기!!!%>
+        <tr>
+            <td style="width: 50px;"><%=(num--)%></td>
+            <td style="width: 60%;">
+                <a href="/notice/detail?notice_id=<%=notice.notice_id%>"><%=notice.title%></a>
+                <%if(notice.cnt>0){%>[<%=notice.cnt%>]<%}%>
+            </td>
+            <td style="width: 100px;"><%=notice.writer%></td>
+            <%var d = new Date(notice.regdate);//날짜처리%>
+            <td style="width: 100px;">
+                <%=d.getFullYear()%>-
+                <%=param.lib.getZeroString(d.getMonth()+1)%>-
+                <%=param.lib.getZeroString(d.getDate())%>
+            </td>
+            <td><%=notice.hit%></td>
+        </tr>
+        <%}%>
+        <tr>
+            <td colspan="5" style="text-align:center">
+    
+            <%if(firstPage-1 <1){%>            
+                <a href="javascript:alert('이전 페이지가 없습니다.');">◀</a> 
+            <%}else{%>
+                <a href="/notice/list?currentPage=<%=firstPage-1%>">◀</a> 
+            <%}%>    
+    
+            <%for(var i=firstPage;i<=lastPage;i++){%>
+                <%if(i>totalPage)break; //총 페이지수를 넘어서면 반복문 멈추기%>            
+                <!-- pageNum  클래스는 현재 유저가 보고 있는 페이지의 경우만 a태그에 적용.. -->
+                <a href="/notice/list?currentPage=<%=i%>" <%if(i==currentPage){%>class="pageNum"<%}%> >[ <%=i%> ]</a>
+            <%}%>
+            
+            
+            <%if(lastPage+1 > totalPage){%>
+                <a href="javascript:alert('다음 페이지가 없습니다');">▶</a>
+            <%}else{%>
+                <a href="/notice/list?currentPage=<%=lastPage+1%>">▶</a>
+            <%}%>
+    
+            </td>
+        </tr>
+        
+    </table>
+    <div style="width: 100%;">
+        <button id="registbtn" onClick="location.href='/notice/registform'" >글 등록</button>
+    </div>
+    <div id="search_list">
+        <form id="search_form">
+            <select name="category" id="category" style="border:5px solid#0063DD">
+                <option value="title">제목</option>
+                <option value="writer">글쓴이</option>
+            </select>
+            <input type="text" id="keyword" name="keyword" placeholder="검색어를 입력하세요" style="width: 300px; border:5px solid#0063DD">
+            <button type="button" id="searchbtn" style="height: 20px;" onclick="search()"><i class='fa fa-search'></i></button>
+        </form>
+    </div>
+</div>
+
+
+<!-- footer -->
+<div >
+    <%- include('../inc/footer')%>
+</div>
+
+</body>
+</html>

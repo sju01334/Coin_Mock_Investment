@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+<style>
+#wrapper{
+    width:1000px;
+    height:800px;
+    border:5px solid lightcyan;
+    background: url("./images/bg2.jpg");
+    background-repeat: no-repeat;
+    background-size: 1000px 800px;
+    margin: auto;
+    text-align: center;
+    position: relative;
+}
+#wrapper h2{
+    text-align: left;
+    padding-top:100px;
+    padding-left: 150px;
+    color:white;
+    font-size: 30px;
+    font-family:Verdana, Geneva, Tahoma, sans-serif
+
+}
+
+a{
+    position: absolute;
+    font-size: 40px;
+    font-weight: bold;
+    display: inline-block;
+    margin: 80px 300px;
+    color: #f4e403;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: 0.5s;
+    letter-spacing: 5px;
+    overflow: hidden;
+    margin-right: 40px;
+    border-radius: 50px;
+   
+}
+#r-bt{
+    left: 400px;
+    top: 350px;
+    padding: 25px 30px;
+}
+#l-bt{
+    left: 400px;
+    top: 500px;
+    padding: 25px 30px;
+}
+a:hover{
+    background: #f4e403;
+    color: #050801;
+    box-shadow: 0 0 5px #f4e403,
+                0 0 25px #f4e403,
+                0 0 50px #f4e403,
+                0 0 200px #f4e403;
+     -webkit-box-reflect:below 1px linear-gradient(transparent, #0005);
+}
+a:nth-child(1){
+    filter: hue-rotate(270deg);
+}
+a:nth-child(2){
+    filter: hue-rotate(110deg);
+}
+a span{
+    position: absolute;
+    display: block;
+}
+a span:nth-child(1){
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,transparent,#f4e403);
+    animation: animate1 1s linear infinite;
+}
+@keyframes animate1{
+    0%{
+        left: -100%;
+    }
+    50%,100%{
+        left: 100%;
+    }
+}
+a span:nth-child(2){
+    top: -100%;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(180deg,transparent,#f4e403);
+    animation: animate2 1s linear infinite;
+    animation-delay: 0.25s;
+}
+@keyframes animate2{
+    0%{
+        top: -100%;
+    }
+    50%,100%{
+        top: 100%;
+    }
+}
+a span:nth-child(3){
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(270deg,transparent,#f4e403);
+    animation: animate3 1s linear infinite;
+    animation-delay: 0.50s;
+}
+@keyframes animate3{
+    0%{
+        right: -100%;
+    }
+    50%,100%{
+        right: 100%;
+    }
+}
+
+
+a span:nth-child(4){
+    bottom: -100%;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(360deg,transparent,#f4e403);
+    animation: animate4 1s linear infinite;
+    animation-delay: 0.75s;
+}
+@keyframes animate4{
+    0%{
+        bottom: -100%;
+    }
+    50%,100%{
+        bottom: 100%;
+    }
+}
+
+
+</style>
+<script src="./js/Track.js"></script>
+<script>
+var wrapper;
+var div;
+var longDiv;
+var title;
+var myMusic;
+var songNum=0;
+var targetX=0;
+var titleArr=["Sakuranbo - Otsuka Ai", "Chopin Nocturne Op.9-2"];
+var imgArr=["a.jpg", "b.jpg"];
+var songArr=["song1.mp3", "song2.mp3"];
+var trackArr=[];
+var btnArr=[];
+var a = 0.1;
+var songflag=0;
+
+
+function init(){
+    
+    
+    wrapper=document.getElementById("wrapper");
+    title=document.getElementById("title");
+   
+    
+    createDiv();
+    createImg();
+    
+    for(var i = 0 ; i<btnArr.length; i++){
+        pushbt(i);
+    }
+
+
+}
+
+function createDiv(){
+    div=document.createElement("div");
+    div.style.width=500+"px"
+    div.style.height=500+"px"
+    div.style.position="absolute";
+    div.style.left=100+"px";
+    div.style.top=200+"px";
+    div.style.backgroundColor="yellow";
+    div.style.float="left";
+    div.style.overflow="hidden";
+
+    wrapper.appendChild(div);
+
+    longDiv=document.createElement("div");
+    longDiv.style.width=3000+"px"
+    longDiv.style.height=500+"px"
+    longDiv.style.position="absolute";
+    longDiv.style.left=targetX+"px";
+    longDiv.style.top=0+"px";
+    longDiv.style.backgroundColor="blue";
+    longDiv.style.float="left";
+
+    div.appendChild(longDiv);
+    
+
+}
+
+function createImg(){
+    // constructor(container, src, song, title, x)
+    for(var i=0;i<imgArr.length;i++){
+        var track=new Track(longDiv,"./images/"+imgArr[i], songArr[i], titleArr[i],500*i);
+        trackArr.push(track);
+    }
+    for(var i=0;i<imgArr.length;i++){
+        var btn=document.createElement("button");
+        btn.innerText=i+1;
+        btn.style.fontSize=30+"px";
+        btn.style.border="none";
+        btn.style.backgroundColor="lightblue";
+        btn.style.color="white";
+        btn.style.borderRadius=30+"px";
+        btn.style.padding=5+"px"
+        btn.style.paddingLeft=15+"px"
+        btn.style.paddingRight=15+"px"
+        btn.style.position="absolute";
+        btn.style.left=650+(80*i)+"px";
+        btn.style.top=230+"px";
+
+        wrapper.appendChild(btn);
+        btnArr.push(btn);
+    }
+
+}
+function pushbt(i){
+    
+    btnArr[i].addEventListener("click",function(){
+        
+        songNum=i;
+        if(myMusic==null){
+            selectSong();
+        }else{
+            myMusic.pause();
+            selectSong();
+            
+        }
+    });
+}
+
+function selectSong(){
+
+    title.innerText=trackArr[songNum].title;
+    myMusic=new Audio(trackArr[songNum].song);
+    myMusic.play();
+    targetX=songNum*-500;
+
+}
+
+function move(){
+    longDiv.style.left = parseFloat(longDiv.style.left) + a*(targetX-parseFloat(longDiv.style.left))+"px";
+
+}
+
+
+function easyclick(){
+    localStorage.setItem("selectsongNum", songNum);
+    localStorage.setItem("version","easy");
+    location.href="./main.html";
+}
+function hardclick(){
+    localStorage.setItem("selectsongNum", songNum);
+    localStorage.setItem("version","hard");
+    location.href="./main.html";
+    
+}
+
+window.addEventListener("load",function(){
+    init();
+    setInterval("move()",10);
+});
+</script>
+</head>
+<body>
+    <div id="wrapper">
+        <h2 id="title">Let's Select Song</h2>
+        <a href="#" onclick="easyclick()" id="r-bt">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            EASY
+          </a>
+          <a href="#" onclick="hardclick()" id="l-bt">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            hard
+          </a>
+    </div>
+</body>
+</html>

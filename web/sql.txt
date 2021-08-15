@@ -1,0 +1,79 @@
+create database stocksite;
+
+create table
+
+create table stock(
+ stock_id int primary key auto_increment,
+ stock_name varchar(30)
+)default  character set utf8;
+
+
+create table stock_chart(
+ stock_chart_id int primary key auto_increment,
+ sotck_id int,
+ stock_count int,
+ open_price int,
+ high_price int,
+ low_price int,
+ close_price int,
+ constraint fk_stockstchart foreign key(stock_id) references stock(stock_id)
+)default  character set utf8;
+
+
+
+create table member(
+ member_id int primary key auto_increment,
+ user_id varchar(30),
+ user_pass varchar(30),
+ user_name varchar(30),
+ user_money int default 1000,
+ regdate  timestamp default now()
+)default  character set utf8;
+
+
+
+insert into stock_chart(stock_id,open_price,high_price,low_price,close_price,stock_date)
+values(1, 20, 30, 10, 15, "2021-04-23 12:00:00");
+
+insert into stock_chart(stock_id,open_price,high_price,low_price,close_price,stock_date)
+values(1, 15, 20, 15, 18, "2021-04-23 12:01:00");
+
+
+
+create table member_trading(
+  trading_id int primary key auto_increment,
+  member_id int default 0,
+  stock_id int default 0,
+  total_count int default 0,
+  price_average int default 0,
+  constraint fk_memberstockid foreign key(stock_id) references stock(stock_id),
+  constraint fk_membermemberd foreign key(member_id) references member(member_id) 
+)default  character set utf8;
+
+
+
+-------------------
+게시판
+-------------------
+create table notice(
+    notice_id int primary key auto_increment
+    , title varchar(100)
+    , writer varchar(20)
+    , content text
+    , regdate  timestamp default now()
+    , hit int default 0
+)default  character set utf8;
+
+
+
+create  table  comments(
+   comments_id  int  primary key auto_increment
+  , notice_id  int
+  , msg  varchar(100)
+  , author  varchar(20)
+  , writeday  timestamp default now()
+  , constraint fk_notcomments foreign key(notice_id) references notice(notice_id)
+)default  character set utf8;
+
+
+

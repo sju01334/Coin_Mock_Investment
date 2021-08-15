@@ -1,0 +1,118 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: lightgray;
+}
+
+#chartdiv {
+  width: 100%;
+  height: 400px;
+}
+
+#trading_main{
+  overflow: hidden;
+  margin: auto;
+  width: 80%;
+  height: 500px;
+
+}
+
+.chartHeader{
+  /* display: none; */
+  width: 100%;
+  height: 80px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+#stock_name{
+  width: 70%;
+  height: 100%;
+  display: flex;
+  justify-content: center; /*flex 속성에서 좌우에서 가운데로 모이게 함*/
+  align-items: center; /*flex 속성에서 위아래에서 가운데로 모이게 함*/
+  font-size: 30px;
+  border-bottom: 3px solid #093687;
+  box-sizing: border-box;
+  float: left;
+}
+
+#stock_price{
+  width: 30%;
+  height: 100%;
+  display: flex;
+  justify-content: center; /*flex 속성에서 좌우에서 가운데로 모이게 함*/
+  align-items: center; /*flex 속성에서 위아래에서 가운데로 모이게 함*/
+  font-size: 3rem;
+  border-bottom: 3px solid #093687;
+  box-sizing: border-box;
+  float: left;
+  color: #0063DD;
+}
+
+span{
+  font-size: 15px;
+  padding-top: 13px;
+  padding-left: 15px;
+}
+
+
+#left_side{
+  width: 70%;
+  height: 500px;
+  overflow: hidden;
+  float: left;
+  background-color: white;
+  box-sizing: border-box;
+  border: 10px solid lightgray;
+  margin: 0px;
+}
+
+#right_side{
+  width: 30%;
+  float: left;
+  background-color: white;
+  box-sizing: border-box;
+  border: 10px solid lightgray;
+  height: 500px;
+}
+
+#trading_system{
+  margin: auto;
+  overflow: hidden;
+  height: 400px;
+  width: 80%;
+}
+
+#foot{
+  margin-top: 100px;
+}
+
+#chartLog{
+  width: 70%;
+  height: 100%;
+  float: left;
+  background-color: white;
+  box-sizing: border-box;
+  border: 10px solid lightgray;
+}
+
+#logTable{
+  width: 100%;
+  height: 100%;
+
+}
+
+#logTable > th {
+  text-align: center;
+
+}
+
+.log_td {
+  text-align: center;
+  box-sizing: border-box;
+  border-bottom: 1px solid lightgray;
+}
+
+
+

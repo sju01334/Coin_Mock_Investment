@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/buysell.css">
+  <title>Document</title>
+
+  <head>
+
+    <style>
+      /* width, height는 후에 100%로 변경. */
+      #wrapper_trade {
+        width: 30%;
+        height: 100%;
+        float: left;
+        background-color: white;
+        box-sizing: border-box;
+        border: 10px solid lightgray;
+      }
+
+      #buy_container {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      #sell_container {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      #bt_trade_sell{
+        width: 50%;
+        background-color: #093687;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #bt_trade_buy{
+        width: 50%;
+        background-color: #093687;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #bt_buy{
+        width:100%;
+        border-top: 3px solid #093687;
+        border-bottom: 3px solid #093687;
+        font-size: 20px;
+      }
+      #bt_sell{
+        width:100%;
+        border-top: 3px solid #093687;
+        border-bottom: 3px solid #093687;
+        font-size: 20px;
+      }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      $(function () { //onLoad되면
+        //편집기 입히기
+
+        $($("input[type='button']")[0]).click(function () {//구매버튼
+          buy();
+        });
+        $($("input[type='button']")[1]).click(function () {//판매버튼
+          sell();
+        });
+
+      });
+
+      function buy() {
+        var coinid = $("input[name=coinid").val();
+        var nowprice = $("input[name=nowprice").val();
+        var buy_cnt = $("input[name=buy_cnt").val();
+
+        var str = "?coinid="+coinid+"&nowprice="+nowprice+"&buy_cnt="+buy_cnt;
+        
+        $.ajax({
+          url:"/inc/trade_buy"+str,
+          type:"GET",
+          success:function(result,status,xhr){
+            alert("구매성공!!");
+            $("input[name=buy_cnt]").val('');
+          },
+          error:function(xhr,status,error){
+          }
+        });
+
+      }
+
+      function sell() {
+        var coinid = $("input[name=coinid").val();
+        var nowprice = $("input[name=nowprice").val();
+        var sell_cnt = $("input[name=sell_cnt").val();
+
+        var str = "?coinid="+coinid+"&nowprice="+nowprice+"&sell_cnt="+sell_cnt;
+        
+        $.ajax({
+          url:"/inc/trade_sell"+str,
+          type:"GET",
+          success:function(result,status,xhr){
+            // console.log(result);
+            if(result=="0"){
+              alert("해당 유저의 판매할 코인이 부족합니다!!");
+              $("input[name=sell_cnt]").val('');
+            }else if(result=="1"){
+              alert("해당 유저가 이 코인을 구매한 적이 없습니다!!");
+              $("input[name=sell_cnt]").val('');
+            }else if(result=="2"){
+              alert("판매하려는 코인이 보유하는 코인보다 많습니다!!");
+              $("input[name=sell_cnt]").val('');
+            }else{
+              alert("판매 성공!!");
+              $("input[name=sell_cnt]").val('');
+            }
+          },
+          error:function(xhr,status,error){
+          }
+        });
+      }
+
+      function stockBS(optionName) {
+        var i;
+        var x = document.getElementsByClassName("trade");
+        for (i = 0; i < x.length; i++) {
+          x[i].style.display = "none";
+        }
+        document.getElementById(optionName).style.display = "block";
+      }
+
+    </script>
+
+  </head>
+
+<body>
+  <div id="wrapper_trade">
+    <%if(joinUser==undefined){ %>
+      <br><br><br><br><br><br><br><br>
+      <a style="padding-left: 130px;">로그인 해주시기 바랍니다.</a>
+
+      <%} else { %>
+        <div class="w3-bar w3-093687">
+          <button id="bt_trade_buy" class="w3-bar-item w3-button" onclick="stockBS('buy_container')">사자</button>
+          <button id="bt_trade_sell" class="w3-bar-item w3-button" onclick="stockBS('sell_container')">팔자</button>
+
+        </div>
+
+        <form id="form1">
+
+          <div id="buy_container" class="trade">
+            
+            <p></p> <br>
+            <label for="buy_coin_label"><b>종 목 명 </b></label>&nbsp&nbsp&nbsp&nbsp
+            <input type="text" name="coinname" value="<%=joinResult[0].stock_name%>" disabled>
+
+            <p></p><br>
+            <label for="buy_much_label"><b>매수가격</b></label>&nbsp&nbsp&nbsp
+            <input type="text" name="nowprice" value="<%=joinResult[0].close_price%>" disabled>
+
+            KRW
+            <p></p><br>
+            <label for="buy_BTC_label"><b>주문수량</b></label>&nbsp&nbsp&nbsp
+            <input type="text" name="buy_cnt" placeholder="수량을 입력하세요">
+
+            <p></p><br>
+            <span style="padding-left: 180px; font-size: 13px;">최소주문금액 : 10 KRW  수수료 : 0.05%</span>
+            <p></p>
+
+            <input type="hidden" name="memberid" value="<%=joinUser.member_id%>" disabled>
+            <input type="hidden" id="coinid" type="text" name="coinid" value="<%=joinResult[0].stock_id%>">
+            <input type="button" id="bt_buy" value="구매" class="w3-bar-item w3-button">
+
+          </div>
+        </form>
+
+        <form id="form2">
+
+          <div id="sell_container" class="trade" style="display:none">
+            <p></p> <br>
+              <label for="buy_coin_label"><b>종 목 명 </b></label>&nbsp&nbsp&nbsp&nbsp
+              <input type="text" name="coinname" value="<%=joinResult[0].stock_name%>" disabled>
+
+              <p></p><br>
+              <label for="buy_much_label"><b>매도가격</b></label>&nbsp&nbsp&nbsp
+              <input type="text" name="nowprice" value="<%=joinResult[0].close_price%>" disabled>
+
+              KRW
+              <p></p><br>
+              <label for="buy_BTC_label"><b>판매수량</b></label>&nbsp&nbsp&nbsp
+              <input type="text" name="sell_cnt" placeholder="수량을 입력하세요">
+
+              <p></p><br>
+            <span style="padding-left: 180px; font-size: 13px;">최소판매금액 : 10 KRW  수수료 : 0.05%</span>
+            <p></p>
+
+            <input type="hidden" name="memberid" value="<%=joinUser.member_id%>" disabled>
+            <input type="hidden" id="coinid" type="text" name="coinid" value="<%=joinResult[0].stock_id%>">
+            <input type="button" id="bt_sell" value="판매" class="w3-bar-item w3-button">
+
+          </div>
+          <!-- <input type="button" value="구매">
+    <input type="button" value="판매"> -->
+        </form>
+
+
+
+        <%}%>
+  </div>
+</body>
